@@ -123,7 +123,7 @@
 <body>
 <div class="wrap">
 <h1>Austin Events</h1>
-<div class="meta">Generated February 18, 2026 at 10:51 PM &middot; 247 events</div>
+<div class="meta">Generated February 18, 2026 at 10:54 PM &middot; 247 events</div>
 <div id="filters"><div class="filter-row"><span class="filter-label">Category</span><button class="tog on" data-filter="cat" data-val="all" style="--c:#58a6ff">All</button><button class="tog" data-filter="cat" data-val="Concert" style="--c:#e74c3c">Concert</button><button class="tog" data-filter="cat" data-val="Disco" style="--c:#9b59b6">Disco</button><button class="tog" data-filter="cat" data-val="Social" style="--c:#3498db">Social</button><button class="tog" data-filter="cat" data-val="Comedy" style="--c:#f1c40f">Comedy</button><button class="tog" data-filter="cat" data-val="Sports" style="--c:#2ecc71">Sports</button><button class="tog" data-filter="cat" data-val="Workshop" style="--c:#e67e22">Workshop</button><button class="tog" data-filter="cat" data-val="Market" style="--c:#1abc9c">Market</button></div><div class="filter-row"><span class="filter-label">Source</span><button class="tog on" data-filter="src" data-val="meetup" style="--c:#2ecc71">M</button><button class="tog on" data-filter="src" data-val="19hz" style="--c:#f1c40f">19hz</button><button class="tog on" data-filter="src" data-val="do512" style="--c:#3498db">D512</button><button class="tog on" data-filter="src" data-val="darkside" style="--c:#e74c3c">DS</button></div></div>
 <table>
 <tbody>
@@ -1467,41 +1467,56 @@ Type: Group...</span></div></td><td class="src" style="color:#e74c3c">[DS]</td><
       linkEl.style.display = '';
     } else { linkEl.style.display = 'none'; }
 
-    // Calendar link (Google Calendar)
+    // Calendar button
     var calEl = document.getElementById('m-cal');
-    var calUrl = buildCalUrl(info);
-    if (calUrl) { calEl.href = calUrl; calEl.target = '_blank'; calEl.style.display = ''; }
-    else { calEl.style.display = 'none'; }
+    calEl._info = info;
+    calEl.style.display = info.start ? '' : 'none';
 
     modal.classList.add('open');
   }
 
-  function buildCalUrl(info) {
-    if (!info.start) return null;
-    // Parse ISO date and build Google Calendar URL
+  // Generate .ics file and trigger download (opens native calendar app)
+  document.getElementById('m-cal').addEventListener('click', function(e) {
+    e.preventDefault();
+    var info = this._info;
+    if (!info || !info.start) return;
     var s = info.start.replace(/\[.*\]$/, '');
     var startDt = new Date(s);
-    if (isNaN(startDt)) return null;
+    if (isNaN(startDt)) return;
     var endDt;
     if (info.end) {
       endDt = new Date(info.end.replace(/\[.*\]$/, ''));
       if (isNaN(endDt)) endDt = new Date(startDt.getTime() + 7200000);
     } else {
-      endDt = new Date(startDt.getTime() + 7200000); // default 2hr
+      endDt = new Date(startDt.getTime() + 7200000);
     }
     function fmt(d) {
-      return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/, '');
+      return d.toISOString().replace(/[-:.]/g,'').replace(/\d{3}Z/, 'Z');
+    }
+    function esc(t) {
+      return (t||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
     }
     var loc = [info.venue, info.address].filter(Boolean).join(', ');
-    var params = new URLSearchParams({
-      action: 'TEMPLATE',
-      text: info.title,
-      dates: fmt(startDt) + '/' + fmt(endDt),
-      location: loc,
-      details: (info.desc || '').substring(0, 500) + (info.url ? '\n\n' + info.url : '')
-    });
-    return 'https://calendar.google.com/calendar/render?' + params.toString();
-  }
+    var desc = ((info.desc||'').substring(0,400) + (info.url ? '\n\n' + info.url : '')).trim();
+    var ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//AustinEvents//EN',
+      'BEGIN:VEVENT',
+      'DTSTART:' + fmt(startDt),
+      'DTEND:' + fmt(endDt),
+      'SUMMARY:' + esc(info.title),
+      loc ? 'LOCATION:' + esc(loc) : '',
+      desc ? 'DESCRIPTION:' + esc(desc) : '',
+      info.url ? 'URL:' + info.url : '',
+      'END:VEVENT','END:VCALENDAR'
+    ].filter(Boolean).join('\r\n');
+    var blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'event.ics';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
 
   function closeModal() { modal.classList.remove('open'); }
   document.querySelector('.m-close').addEventListener('click', closeModal);
