@@ -5,130 +5,182 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Austin Events</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #0d1117; color: #c9d1d9;
-    font-family: "SF Mono", "Cascadia Code", "Fira Code", Menlo, Consolas, monospace;
-    font-size: 14px; line-height: 1.4;
-  }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 8px 12px; }
-  h1 { color: #58a6ff; font-size: 1.3rem; padding: 12px 0 4px; }
-  .meta { color: #484f58; font-size: 0.85em; padding-bottom: 8px; }
+:root {
+  --bg: #0d1117; --fg: #c9d1d9; --muted: #484f58;
+  --border: #21262d; --surface: #161b22;
+  --accent: #58a6ff; --time: #79c0ff; --group: #a5d6ff; --venue: #7ee787;
+  --tog-active-fg: #0d1117;
+  --modal-bg: rgba(0,0,0,0.7); --modal-surface: #161b22; --modal-border: #30363d;
+  --desc-bg: #0d1117;
+  --btn-primary: #238636; --btn-primary-hover: #2ea043;
+  --hover-row: #161b22;
+}
+.light {
+  --bg: #ffffff; --fg: #24292f; --muted: #6e7781;
+  --border: #d0d7de; --surface: #f6f8fa;
+  --accent: #0969da; --time: #0550ae; --group: #0550ae; --venue: #116329;
+  --tog-active-fg: #ffffff;
+  --modal-bg: rgba(0,0,0,0.3); --modal-surface: #ffffff; --modal-border: #d0d7de;
+  --desc-bg: #f6f8fa;
+  --btn-primary: #2da44e; --btn-primary-hover: #218838;
+  --hover-row: #f6f8fa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", Menlo, Consolas, monospace;
+  font-size: 14px; line-height: 1.4;
+}
+.wrap { max-width: 1100px; margin: 0 auto; padding: 8px 12px; }
+.header { display: flex; align-items: center; justify-content: space-between; }
+h1 { color: var(--accent); font-size: 1.3rem; padding: 12px 0 4px; }
+.meta { color: var(--muted); font-size: 0.85em; padding-bottom: 8px; }
+#theme-toggle {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-family: inherit; font-size: 1.1em; padding: 2px 8px;
+  border-radius: 6px; cursor: pointer; line-height: 1;
+}
+#theme-toggle:hover { color: var(--fg); }
+.export-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-family: inherit; font-size: 0.85em; padding: 5px 12px;
+  border-radius: 6px; cursor: pointer; text-decoration: none;
+  white-space: nowrap; display: flex; align-items: center;
+}
+.export-btn:hover { color: var(--fg); border-color: var(--accent); }
 
-  /* Filters */
-  #filters {
-    border-bottom: 1px solid #21262d; padding: 6px 0 8px;
-    margin-bottom: 4px;
-  }
-  .filter-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 3px 0; }
-  .filter-label { color: #484f58; font-size: 0.8em; width: 72px; flex-shrink: 0; }
-  .tog {
-    background: none; border: 1px solid var(--c); color: var(--c);
-    font-family: inherit; font-size: 0.8em;
-    padding: 1px 8px; border-radius: 3px; cursor: pointer;
-  }
-  .tog.on { background: var(--c); color: #0d1117; font-weight: bold; }
+/* Filters */
+#filters {
+  border-bottom: 1px solid var(--border); padding: 6px 0 8px;
+  margin-bottom: 4px;
+}
+.filter-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin: 3px 0; }
+.filter-label { color: var(--muted); font-size: 0.8em; width: 72px; flex-shrink: 0; }
+.tog {
+  background: none; border: 1px solid var(--c); color: var(--c);
+  font-family: inherit; font-size: 0.8em;
+  padding: 1px 8px; border-radius: 3px; cursor: pointer;
+}
+.tog.on { background: var(--c); color: var(--tog-active-fg); font-weight: bold; }
 
-  /* Table */
-  table { width: 100%; border-collapse: collapse; }
-  .date-row { cursor: pointer; }
-  .date-row td {
-    color: #58a6ff; font-weight: bold; font-size: 1em;
-    padding: 12px 0 4px; border-bottom: 1px solid #21262d;
-    user-select: none;
-  }
-  .date-row .arrow { display: inline-block; width: 1em; text-align: center; }
-  .date-row .count { color: #484f58; font-weight: normal; }
-  .ev { cursor: pointer; }
-  .ev td { padding: 3px 8px 3px 0; vertical-align: top; }
-  .ev:hover { background: #161b22; }
-  .time { color: #79c0ff; white-space: nowrap; width: 80px; }
-  .cat { width: 100px; white-space: nowrap; font-size: 0.85em; }
-  .title { font-weight: bold; }
-  .src { white-space: nowrap; font-size: 0.85em; width: 50px; text-align: right; }
-  .sub { font-weight: normal; font-size: 0.85em; color: #484f58; margin-top: 1px; }
-  .sub .group { color: #a5d6ff; }
-  .sub .venue { color: #7ee787; }
-  .sub .desc { color: #484f58; }
-  tr.hidden { display: none; }
+/* Search */
+#search-box {
+  width: 100%; padding: 6px 10px; margin-bottom: 6px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--modal-border);
+  border-radius: 6px; font-family: inherit; font-size: 0.9em;
+  outline: none;
+}
+#search-box:focus { border-color: var(--accent); }
+#search-box::placeholder { color: var(--muted); }
 
-  /* Detail modal */
-  #modal-bg {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.7); z-index: 100;
-  }
-  #modal-bg.open { display: flex; align-items: flex-end; justify-content: center; }
-  #modal {
-    background: #161b22; border: 1px solid #30363d;
-    border-radius: 12px 12px 0 0; width: 100%; max-width: 600px;
-    max-height: 85vh; overflow-y: auto;
-    padding: 20px 16px 24px; position: relative;
-  }
-  #modal .m-close {
-    position: absolute; top: 12px; right: 16px;
-    background: none; border: none; color: #484f58;
-    font-size: 1.4em; cursor: pointer; font-family: inherit;
-  }
-  #modal .m-close:hover { color: #c9d1d9; }
-  #modal .m-title {
-    color: #c9d1d9; font-size: 1.1em; font-weight: bold;
-    padding-right: 30px; margin-bottom: 12px;
-  }
-  #modal .m-row {
-    display: flex; gap: 8px; margin: 6px 0;
-    font-size: 0.9em; line-height: 1.5;
-  }
-  #modal .m-label { color: #484f58; min-width: 64px; flex-shrink: 0; }
-  #modal .m-val { color: #c9d1d9; }
-  #modal .m-val.cyan { color: #79c0ff; }
-  #modal .m-val.green { color: #7ee787; }
-  #modal .m-val.blue { color: #a5d6ff; }
-  #modal .m-img {
-    max-width: 100%; max-height: 300px;
-    border-radius: 6px; object-fit: contain;
-    margin: 12px 0; display: block;
-  }
-  #modal .m-desc {
-    color: #8b949e; font-size: 0.9em; line-height: 1.5;
-    margin: 12px 0; padding: 10px;
-    background: #0d1117; border-radius: 6px;
-    white-space: pre-wrap;
-  }
-  #modal .m-actions {
-    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
-  }
-  #modal .m-btn {
-    font-family: inherit; font-size: 0.85em;
-    padding: 8px 14px; border-radius: 6px; cursor: pointer;
-    text-decoration: none; text-align: center;
-    flex: 1; min-width: 120px;
-  }
-  #modal .m-btn-primary {
-    background: #238636; border: 1px solid #2ea043; color: #fff;
-  }
-  #modal .m-btn-primary:hover { background: #2ea043; }
-  #modal .m-btn-secondary {
-    background: none; border: 1px solid #30363d; color: #58a6ff;
-  }
-  #modal .m-btn-secondary:hover { background: #21262d; }
+/* Table */
+table { width: 100%; border-collapse: collapse; }
+.date-row { cursor: pointer; }
+.date-row td {
+  color: var(--accent); font-weight: bold; font-size: 1em;
+  padding: 12px 0 4px; border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.date-row .arrow { display: inline-block; width: 1em; text-align: center; }
+.date-row .count { color: var(--muted); font-weight: normal; }
+.ev { cursor: pointer; }
+.ev td { padding: 3px 8px 3px 0; vertical-align: top; }
+.ev:hover { background: var(--hover-row); }
+.time { color: var(--time); white-space: nowrap; width: 80px; }
+.cat { width: 100px; white-space: nowrap; font-size: 0.85em; }
+.title { font-weight: bold; }
+.src { white-space: nowrap; font-size: 0.85em; width: 50px; text-align: right; }
+.sub { font-weight: normal; font-size: 0.85em; color: var(--muted); margin-top: 1px; }
+.sub .group { color: var(--group); }
+.sub .venue { color: var(--venue); }
+.sub .desc { color: var(--muted); }
+tr.hidden { display: none; }
 
-  @media (max-width: 600px) {
-    .cat { display: none; }
-    .src { display: none; }
-    .time { width: 65px; font-size: 0.85em; }
-    .filter-label { width: 56px; }
-    #modal { border-radius: 12px 12px 0 0; max-height: 90vh; }
-  }
-  @media (min-width: 601px) {
-    #modal-bg.open { align-items: center; }
-    #modal { border-radius: 12px; }
-  }
+/* Detail modal */
+#modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: var(--modal-bg); z-index: 100;
+}
+#modal-bg.open { display: flex; align-items: flex-end; justify-content: center; }
+#modal {
+  background: var(--modal-surface); border: 1px solid var(--modal-border);
+  border-radius: 12px 12px 0 0; width: 100%; max-width: 600px;
+  max-height: 85vh; overflow-y: auto;
+  padding: 20px 16px 24px; position: relative;
+}
+#modal .m-close {
+  position: absolute; top: 12px; right: 16px;
+  background: none; border: none; color: var(--muted);
+  font-size: 1.4em; cursor: pointer; font-family: inherit;
+}
+#modal .m-close:hover { color: var(--fg); }
+#modal .m-title {
+  color: var(--fg); font-size: 1.1em; font-weight: bold;
+  padding-right: 30px; margin-bottom: 12px;
+}
+#modal .m-row {
+  display: flex; gap: 8px; margin: 6px 0;
+  font-size: 0.9em; line-height: 1.5;
+}
+#modal .m-label { color: var(--muted); min-width: 64px; flex-shrink: 0; }
+#modal .m-val { color: var(--fg); }
+#modal .m-val.cyan { color: var(--time); }
+#modal .m-val.green { color: var(--venue); }
+#modal .m-val.blue { color: var(--group); }
+#modal .m-img {
+  max-width: 100%; max-height: 300px;
+  border-radius: 6px; object-fit: contain;
+  margin: 12px 0; display: block;
+}
+#modal .m-desc {
+  color: var(--muted); font-size: 0.9em; line-height: 1.5;
+  margin: 12px 0; padding: 10px;
+  background: var(--desc-bg); border-radius: 6px;
+  white-space: pre-wrap;
+}
+#modal .m-actions {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+}
+#modal .m-btn {
+  font-family: inherit; font-size: 0.85em;
+  padding: 8px 14px; border-radius: 6px; cursor: pointer;
+  text-decoration: none; text-align: center;
+  flex: 1; min-width: 120px;
+}
+#modal .m-btn-primary {
+  background: var(--btn-primary); border: 1px solid var(--btn-primary-hover); color: #fff;
+}
+#modal .m-btn-primary:hover { background: var(--btn-primary-hover); }
+#modal .m-btn-secondary {
+  background: none; border: 1px solid var(--modal-border); color: var(--accent);
+}
+#modal .m-btn-secondary:hover { background: var(--surface); }
+
+@media (max-width: 600px) {
+  .cat { display: none; }
+  .src { display: none; }
+  .time { width: 65px; font-size: 0.85em; }
+  .filter-label { width: 56px; }
+  #modal { border-radius: 12px 12px 0 0; max-height: 90vh; }
+}
+@media (min-width: 601px) {
+  #modal-bg.open { align-items: center; }
+  #modal { border-radius: 12px; }
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
+<div class="header">
 <h1>Austin Events</h1>
-<div class="meta">Generated June 23, 2026 at 01:59 AM &middot; 377 events</div>
+<button id="theme-toggle" title="Toggle theme">&#9790;</button>
+</div>
+<div class="meta">Generated June 23, 2026 at 02:51 AM &middot; 377 events</div>
+<div style="display:flex;gap:8px;margin-bottom:6px">
+<input type="text" id="search-box" placeholder="Search events..." style="flex:1">
+<a href="#" id="export-cal" class="export-btn" title="Download all visible events as .ics">Export .ics</a>
+</div>
 <div id="filters"><div class="filter-row"><span class="filter-label">Category</span><button class="tog on" data-filter="cat" data-val="all" style="--c:#58a6ff">All</button><button class="tog" data-filter="cat" data-val="Concert" style="--c:#e74c3c">Concert</button><button class="tog" data-filter="cat" data-val="Disco" style="--c:#9b59b6">Disco</button><button class="tog" data-filter="cat" data-val="Social" style="--c:#3498db">Social</button><button class="tog" data-filter="cat" data-val="Comedy" style="--c:#f1c40f">Comedy</button><button class="tog" data-filter="cat" data-val="Sports" style="--c:#2ecc71">Sports</button><button class="tog" data-filter="cat" data-val="Workshop" style="--c:#e67e22">Workshop</button><button class="tog" data-filter="cat" data-val="Market" style="--c:#1abc9c">Market</button></div><div class="filter-row"><span class="filter-label">Source</span><button class="tog on" data-filter="src" data-val="radio" style="--c:#D4A017">R</button><button class="tog on" data-filter="src" data-val="meetup" style="--c:#2ecc71">M</button><button class="tog on" data-filter="src" data-val="19hz" style="--c:#f1c40f">19hz</button><button class="tog on" data-filter="src" data-val="do512" style="--c:#3498db">D512</button><button class="tog on" data-filter="src" data-val="darkside" style="--c:#e74c3c">DS</button><button class="tog on" data-filter="src" data-val="instagram" style="--c:#E1306C">IG</button><button class="tog on" data-filter="src" data-val="culturemap" style="--c:#FF6B35">CM</button><button class="tog on" data-filter="src" data-val="showlists" style="--c:#A855F7">SL</button><button class="tog on" data-filter="src" data-val="fetlife" style="--c:#1E90FF">FL</button></div></div>
 <table>
 <tbody>
@@ -136,7 +188,7 @@
 <tr class="ev" data-day="2026-06-23" data-cat="Sports" data-src="meetup" data-info='{&quot;title&quot;: &quot;Core Body Boot Camp&quot;, &quot;url&quot;: &quot;https://www.meetup.com/the-rise-free-outdoor-fitness-in-atx/events/315083747/&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;The Rise Free Outdoor Fitness in ATX&quot;, &quot;venue&quot;: &quot;Doug Sahm Hill Summit&quot;, &quot;address&quot;: &quot;Doug Sahm Hill Path, Austin, TX&quot;, &quot;desc&quot;: &quot;Outdoor fitness workout combining HIIT, bodyweight exercises, and calisthenics. Open to all fitness levels.&quot;, &quot;time&quot;: &quot;5:12 AM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T10:12:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-23T06:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/a/9/1/f/highres_497983295.jpeg&quot;}'><td class="time">5:12 AM</td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">Core Body Boot Camp<div class="sub"><span class="group">The Rise Free Outdoor Fitness in ATX</span> &middot; <span class="venue">Doug Sahm Hill Summit</span> &middot; <span class="desc">Outdoor fitness workout combining HIIT, bodyweight exercises, and calisthenics. Open to all fitness levels.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;Practiquemos Espa\u00f1ol&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/practiquemos-espanol-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Austin Public Library Windsor Park Branch&quot;, &quot;venue&quot;: &quot;Austin Public Library Windsor Park Branch&quot;, &quot;address&quot;: &quot;5833 Westminster Dr., Austin, TX&quot;, &quot;desc&quot;: &quot;Spanish conversation practice session requiring basic Spanish knowledge.&quot;, &quot;time&quot;: &quot;11:00 AM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T11:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32213882/1168ae23-d55d-448f-bccb-7b268c6626ad.jpg&quot;}'><td class="time">11:00 AM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Practiquemos Español<div class="sub"><span class="group">Austin Public Library Windsor Park Branch</span> &middot; <span class="venue">Austin Public Library Windsor Park Branch</span> &middot; <span class="desc">Spanish conversation practice session requiring basic Spanish knowledge.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;World Cup Day 12&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/world-cup-day-12-argentina-vs-austria-france-vs-iraq-and-more-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Hotel Vegas &amp; Volstead present&quot;, &quot;venue&quot;: &quot;Hotel Vegas &amp; The Volstead Lounge&quot;, &quot;address&quot;: &quot;1502 E 6th St, Austin, TX&quot;, &quot;desc&quot;: &quot;Viewing of World Cup matches including Argentina vs Austria and France vs Iraq. Open to attendees aged 21 and older.&quot;, &quot;time&quot;: &quot;11:30 AM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T11:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32869422/96852cb6-d7f0-4ccd-a597-d99e3c518057.jpg&quot;}'><td class="time">11:30 AM</td><td class="cat" style="color:#3498db">Social</td><td class="title">World Cup Day 12<div class="sub"><span class="group">Hotel Vegas &amp; Volstead present</span> &middot; <span class="venue">Hotel Vegas &amp; The Volstead Lounge</span> &middot; <span class="desc">Viewing of World Cup matches including Argentina vs Austria and France vs Iraq. Open to attendees aged 21 and older.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
-<tr class="ev" data-day="2026-06-23" data-cat="Workshop" data-src="meetup" data-info='{&quot;title&quot;: &quot;Senior Tango Class&quot;, &quot;url&quot;: &quot;https://www.meetup.com/esquina-tango-austin/events/315090417/&quot;, &quot;category&quot;: &quot;Workshop&quot;, &quot;group&quot;: &quot;Esquina Tango Cultural Center of Austin&quot;, &quot;venue&quot;: &quot;Esquina Tango&quot;, &quot;address&quot;: &quot;209 Pedernales St, Austin, TX&quot;, &quot;desc&quot;: &quot;Tango dance class for seniors at all levels. Open to all who wish to learn the art of tango.&quot;, &quot;time&quot;: &quot;1:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T13:00:00-05:00&quot;, &quot;end&quot;: &quot;2026-06-23T14:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">1:00 PM</td><td class="cat" style="color:#e67e22">Workshop</td><td class="title">Senior Tango Class<div class="sub"><span class="group">Esquina Tango Cultural Center of Austin</span> &middot; <span class="venue">Esquina Tango</span> &middot; <span class="desc">Tango dance class for seniors at all levels. Open to all who wish to learn the art of tango.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
+<tr class="ev" data-day="2026-06-23" data-cat="Workshop" data-src="meetup" data-info='{&quot;title&quot;: &quot;Senior Tango Class&quot;, &quot;url&quot;: &quot;https://www.meetup.com/esquina-tango-austin/events/315090417/&quot;, &quot;category&quot;: &quot;Workshop&quot;, &quot;group&quot;: &quot;Esquina Tango Cultural Center of Austin&quot;, &quot;venue&quot;: &quot;Esquina Tango&quot;, &quot;address&quot;: &quot;209 Pedernales St, Austin, TX&quot;, &quot;desc&quot;: &quot;Tango dance class for seniors at all levels. Open to all who wish to learn the art of tango.&quot;, &quot;time&quot;: &quot;1:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T18:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-23T14:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">1:00 PM</td><td class="cat" style="color:#e67e22">Workshop</td><td class="title">Senior Tango Class<div class="sub"><span class="group">Esquina Tango Cultural Center of Austin</span> &middot; <span class="venue">Esquina Tango</span> &middot; <span class="desc">Tango dance class for seniors at all levels. Open to all who wish to learn the art of tango.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;John Bardy Acoustic Pickers Circle&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/john-bardy-acoustic-pickers-circle-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;#luckenbach&quot;, &quot;venue&quot;: &quot;Luckenbach, TX&quot;, &quot;address&quot;: &quot;412 Luckenbach Town Loop, Fredericksburg, TX&quot;, &quot;desc&quot;: &quot;An acoustic music circle open to all ages. Part of the Luckenbach event series.&quot;, &quot;time&quot;: &quot;1:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T13:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/27804872/e0106966-46cf-48ff-ba36-ed56d5dec6e5.jpg&quot;}'><td class="time">1:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">John Bardy Acoustic Pickers Circle<div class="sub"><span class="group">#luckenbach</span> &middot; <span class="venue">Luckenbach, TX</span> &middot; <span class="desc">An acoustic music circle open to all ages. Part of the Luckenbach event series.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Concert" data-src="instagram" data-info='{&quot;title&quot;: &quot;The Kid LAROI with special guests Tommy Richman and WiztheMC&quot;, &quot;url&quot;: &quot;https://www.instagram.com/stubbsaustin/p/DY91nKelCtc/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;@stubbsaustin&quot;, &quot;venue&quot;: &quot;Stubb&#x27;s&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;The Kid LAROI performs with special guests Tommy Richman and WiztheMC at Stubb&#x27;s. Doors open at 6:30pm.&quot;, &quot;time&quot;: &quot;3:45 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T15:45:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;instagram&quot;, &quot;image&quot;: &quot;https://instagram.faus1-1.fna.fbcdn.net/v/t51.82787-15/712307112_18588275971001275_694790174539849122_n.jpg?stp=dst-jpg_e35_p640x640_sh2.08_tt6&amp;_nc_ht=instagram.faus1-1.fna.fbcdn.net&amp;_nc_cat=107&amp;_nc_oc=Q6cZ2gEkegF_gD0_o2qwQHlSBWjqgOV0btyZfHdb0Vbs_V0hpheUpjUpiWswF4HziiQcnx7G734hzU7jyhWTcWdj_9Gu&amp;_nc_ohc=g6xzdI-VA84Q7kNvwF2ll_C&amp;_nc_gid=i35uRyYRHiZrLvTOsZurKg&amp;edm=AOQ1c0wBAAAA&amp;ccb=7-5&amp;oh=00_Af_YLwyUY_BIYiLWLnKuPgnn2XIlMGb2-LzlLnW-h-NuFw&amp;oe=6A22FDB9&amp;_nc_sid=8b3546&quot;}'><td class="time">3:45 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">The Kid LAROI with special guests Tommy Richman and WiztheMC<div class="sub"><span class="group">@stubbsaustin</span> &middot; <span class="venue">Stubb&#x27;s</span> &middot; <span class="desc">The Kid LAROI performs with special guests Tommy Richman and WiztheMC at Stubb&#x27;s. Doors open at 6:30pm.</span></div></td><td class="src" style="color:#E1306C">[IG]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;Kay O&#x27;Neill Acoustic Pickers Circle&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/kay-o-neill-acoustic-pickers-circle-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;#luckenbach&quot;, &quot;venue&quot;: &quot;Luckenbach, TX&quot;, &quot;address&quot;: &quot;412 Luckenbach Town Loop, Fredericksburg, TX&quot;, &quot;desc&quot;: &quot;An acoustic music circle open to all ages. Part of the Luckenbach event series.&quot;, &quot;time&quot;: &quot;5:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T17:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/27804873/26992927-0d45-4796-a7a2-6215b9f5e781.jpg&quot;}'><td class="time">5:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Kay O&#x27;Neill Acoustic Pickers Circle<div class="sub"><span class="group">#luckenbach</span> &middot; <span class="venue">Luckenbach, TX</span> &middot; <span class="desc">An acoustic music circle open to all ages. Part of the Luckenbach event series.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
@@ -151,7 +203,7 @@
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;Latine, Queer, Drag Artists Discussion&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/artistic-triple-threats-latine-queer-drag-artists-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Local Queer&quot;, &quot;venue&quot;: &quot;Birdhouse Books and Gifts&quot;, &quot;address&quot;: &quot;5925 Burnet Rd, Austin, TX&quot;, &quot;desc&quot;: &quot;Panel discussion and mingle event focused on Latine, queer, and drag artists. Includes lecture and reception.&quot;, &quot;time&quot;: &quot;6:30 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T18:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32633813/d3b26372-0a23-418e-b3fc-c451bd99471b.png&quot;}'><td class="time">6:30 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Latine, Queer, Drag Artists Discussion<div class="sub"><span class="group">Local Queer</span> &middot; <span class="venue">Birdhouse Books and Gifts</span> &middot; <span class="desc">Panel discussion and mingle event focused on Latine, queer, and drag artists. Includes lecture and reception.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;Book Club Discussion&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/milwood-monday-night-book-club-upright-women-wanted-by-sarah-gailey-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Milwood Monday Night Book Club&quot;, &quot;venue&quot;: &quot;Austin Public Library Milwood Branch&quot;, &quot;address&quot;: &quot;12500 Amherst Dr., Austin, TX&quot;, &quot;desc&quot;: &quot;Discussion of the book Upright Women Wanted by Sarah Gailey. Open to all attendees.&quot;, &quot;time&quot;: &quot;6:45 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T18:45:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/27889557/ed58f792-0bef-4627-9472-91aa3867cc0d.jpg&quot;}'><td class="time">6:45 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Book Club Discussion<div class="sub"><span class="group">Milwood Monday Night Book Club</span> &middot; <span class="venue">Austin Public Library Milwood Branch</span> &middot; <span class="desc">Discussion of the book Upright Women Wanted by Sarah Gailey. Open to all attendees.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="radio" data-info='{&quot;title&quot;: &quot;Radio Roof Snake Trivia&quot;, &quot;url&quot;: &quot;https://www.prekindle.com/promo/id/-2852527949146233396&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Radio Coffee &amp; Beer&quot;, &quot;venue&quot;: &quot;Radio/East&quot;, &quot;address&quot;: &quot;3504 Montopolis Dr., Austin, TX, 78744&quot;, &quot;desc&quot;: &quot;Trivia night event.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T19:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;radio&quot;, &quot;image&quot;: &quot;https://d1yf68t7nbxlyn.cloudfront.net/image/id/-2852527949146233381&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Radio Roof Snake Trivia<div class="sub"><span class="group">Radio Coffee &amp; Beer</span> &middot; <span class="venue">Radio/East</span> &middot; <span class="desc">Trivia night event.</span></div></td><td class="src" style="color:#D4A017">[R]</td></tr>
-<tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Cinematic Coalition (Chat Night) Conversation: Disclosure Day&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/314664227/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Cinematic Coalition (Chat Night) Conversation: Disclosure Day<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
+<tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Event&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/314664227/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;No details available for this event.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Event<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span> &middot; <span class="desc">No details available for this event.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;Louis Tomlinson Concert&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/louis-tomlinson-how-did-we-get-here-world-tour-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Do512&quot;, &quot;venue&quot;: &quot;Moody Center&quot;, &quot;address&quot;: &quot;2001 Robert Dedman Dr, Austin, TX&quot;, &quot;desc&quot;: &quot;Louis Tomlinson performs live with The Aces. Open to the general public.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T19:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/27779361/5d6fd727-a585-4dba-8cdc-9d384ab230c0.jpg&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Louis Tomlinson Concert<div class="sub"><span class="group">Do512</span> &middot; <span class="venue">Moody Center</span> &middot; <span class="desc">Louis Tomlinson performs live with The Aces. Open to the general public.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;Blue Monday Night&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/blue-monday-w-soul-man-sam-lindsay-beaver-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Do512&quot;, &quot;venue&quot;: &quot;Antone&#x27;s&quot;, &quot;address&quot;: &quot;305 East 5th Street, Austin, TX&quot;, &quot;desc&quot;: &quot;Soul Man Sam performs live music. Entry is $12 or free for service industry workers.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T19:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32217504/69e2754a-c0cd-442b-ae52-3f027ef66c39.png&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Blue Monday Night<div class="sub"><span class="group">Do512</span> &middot; <span class="venue">Antone&#x27;s</span> &middot; <span class="desc">Soul Man Sam performs live music. Entry is $12 or free for service industry workers.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-23" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;Drag Bingo Night&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/22/drag-me-to-bingo-beach-at-hanovers-pflugerville-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Hanovers Draught Haus Presents&quot;, &quot;venue&quot;: &quot;Hanovers Draught Haus (Pflugerville)&quot;, &quot;address&quot;: &quot;108 Main Street, Pflugerville, TX&quot;, &quot;desc&quot;: &quot;Drag bingo event with prizes and themed attire. Free to play.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Tuesday, June 23, 2026&quot;, &quot;start&quot;: &quot;2026-06-23T19:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32698528/42876e89-95c1-41ba-bfdd-7d8302208aef.jpg&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Drag Bingo Night<div class="sub"><span class="group">Hanovers Draught Haus Presents</span> &middot; <span class="venue">Hanovers Draught Haus (Pflugerville)</span> &middot; <span class="desc">Drag bingo event with prizes and themed attire. Free to play.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
@@ -221,11 +273,12 @@
 <tr class="ev" data-day="2026-06-24" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;Uncle Roy &amp; Spice&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324322&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;C-Boy\u2019s Heart &amp; Soul&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Live music performance open to music lovers.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Uncle Roy &amp; Spice<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">C-Boy’s Heart &amp; Soul</span> &middot; <span class="desc">Live music performance open to music lovers.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
 <tr class="ev" data-day="2026-06-24" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;Violet Crown Jazz Revue with Liz Morphis&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324664&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Elephant Room&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Jazz performance featuring Liz Morphis open to jazz fans.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Violet Crown Jazz Revue with Liz Morphis<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Elephant Room</span> &middot; <span class="desc">Jazz performance featuring Liz Morphis open to jazz fans.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
 <tr class="ev" data-day="2026-06-24" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;Wednesday Jazz Night&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324629&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Parker Jazz Club&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Jazz night at Parker Jazz Club open to jazz enthusiasts.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Wednesday Jazz Night<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Parker Jazz Club</span> &middot; <span class="desc">Jazz night at Parker Jazz Club open to jazz enthusiasts.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
-<tr class="ev" data-day="2026-06-24" data-cat="Sports" data-src="showlists" data-info='{&quot;title&quot;: &quot;World Cup Day 14&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324214&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Hotel Vegas&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Watch World Cup matches including Mexico vs Czechia and Scotland vs Brazil. Open to sports fans.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">World Cup Day 14<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Hotel Vegas</span> &middot; <span class="desc">Watch World Cup matches including Mexico vs Czechia and Scotland vs Brazil. Open to sports fans.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
+<tr class="ev" data-day="2026-06-24" data-cat="Sports" data-src="showlists" data-info='{&quot;title&quot;: &quot;World Cup Day 14 Viewing&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324214&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Hotel Vegas&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Watch World Cup matches including Mexico vs Czechia and Scotland vs Brazil at Hotel Vegas.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">World Cup Day 14 Viewing<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Hotel Vegas</span> &middot; <span class="desc">Watch World Cup matches including Mexico vs Czechia and Scotland vs Brazil at Hotel Vegas.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
 <tr class="ev" data-day="2026-06-24" data-cat="Sports" data-src="showlists" data-info='{&quot;title&quot;: &quot;World Cup: Switzerland vs. Canada&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324760&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;ABGB&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Viewing of the World Cup match between Switzerland and Canada for sports fans.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Wednesday, June 24, 2026&quot;, &quot;start&quot;: &quot;2026-06-24T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">World Cup: Switzerland vs. Canada<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">ABGB</span> &middot; <span class="desc">Viewing of the World Cup match between Switzerland and Canada for sports fans.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
-<tr class="date-row" data-day="2026-06-25"><td colspan="4"><span class="arrow">v</span> Thursday, June 25 <span class="count">(20)</span></td></tr>
+<tr class="date-row" data-day="2026-06-25"><td colspan="4"><span class="arrow">v</span> Thursday, June 25 <span class="count">(21)</span></td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;Buffaloe &amp; The Heard&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/25/buffaloe-the-heard-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Do512&quot;, &quot;venue&quot;: &quot;Krause&#x27;s Cafe &amp; Biergarten&quot;, &quot;address&quot;: &quot;148 S Castell Ave, New Braunfels, TX&quot;, &quot;desc&quot;: &quot;Live music performance by James Ray Buffaloe, Jr. Open to adults 21+.&quot;, &quot;time&quot;: &quot;6:00 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T18:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32100753/9c051269-7f06-40ea-9163-9cfc1a6e85b7.jpg&quot;}'><td class="time">6:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Buffaloe &amp; The Heard<div class="sub"><span class="group">Do512</span> &middot; <span class="venue">Krause&#x27;s Cafe &amp; Biergarten</span> &middot; <span class="desc">Live music performance by James Ray Buffaloe, Jr. Open to adults 21+.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Social" data-src="do512" data-info='{&quot;title&quot;: &quot;The Worst Person in the World and Pillion Double Feature&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/25/the-worst-person-in-the-world-pillion-double-feature-tickets&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Paramount Summer Classic Film Series Presents&quot;, &quot;venue&quot;: &quot;Paramount and Stateside Theatres&quot;, &quot;address&quot;: &quot;713 Congress, Austin, TX&quot;, &quot;desc&quot;: &quot;Film screening of The Worst Person in the World and Pillion. Open to adults 18+.&quot;, &quot;time&quot;: &quot;6:00 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T18:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/32192414/de2afdec-c744-4f3c-9ea0-80ea512b9fa9.png&quot;}'><td class="time">6:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">The Worst Person in the World and Pillion Double Feature<div class="sub"><span class="group">Paramount Summer Classic Film Series Presents</span> &middot; <span class="venue">Paramount and Stateside Theatres</span> &middot; <span class="desc">Film screening of The Worst Person in the World and Pillion. Open to adults 18+.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
+<tr class="ev" data-day="2026-06-25" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;The Sunfire Brotherhood Meetup&quot;, &quot;url&quot;: &quot;https://www.meetup.com/sunfirebrotherhood/events/314839927/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Sunfire Brotherhood&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A gathering for members of the Sunfire Brotherhood.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T00:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">The Sunfire Brotherhood Meetup<div class="sub"><span class="group">Sunfire Brotherhood</span> &middot; <span class="desc">A gathering for members of the Sunfire Brotherhood.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="do512" data-info='{&quot;title&quot;: &quot;Gary Clark Jr. with Brad Stivers&quot;, &quot;url&quot;: &quot;https://do512.com/events/2026/6/25/gary-clark-jr-night-six-tickets&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Do512&quot;, &quot;venue&quot;: &quot;Antone&#x27;s&quot;, &quot;address&quot;: &quot;305 East 5th Street, Austin, TX&quot;, &quot;desc&quot;: &quot;Live music performance by Gary Clark Jr. Open to adults 21+.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T19:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;do512&quot;, &quot;image&quot;: &quot;https://assets0.dostuffmedia.com/uploads/aws_asset/aws_asset/30002381/4b438ae4-fc46-4c82-b98e-a7a34da2f405.jpg&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Gary Clark Jr. with Brad Stivers<div class="sub"><span class="group">Do512</span> &middot; <span class="venue">Antone&#x27;s</span> &middot; <span class="desc">Live music performance by Gary Clark Jr. Open to adults 21+.</span></div></td><td class="src" style="color:#3498db">[D512]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="darkside" data-info='{&quot;title&quot;: &quot;Datura, Faetrap, Odar, and The Polybius Cabinet&quot;, &quot;url&quot;: &quot;https://www.thedarkersideofaustin.com/event/datura-faetrap-odar-the-polybius-cabinet/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Kick Butt Coffee&quot;, &quot;venue&quot;: &quot;Kick Butt Coffee&quot;, &quot;address&quot;: &quot;5775 Airport Blvd. Suite 725, Austin, TX, 78752&quot;, &quot;desc&quot;: &quot;A live experimental music performance at Kick Butt Coffee.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T19:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;darkside&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Datura, Faetrap, Odar, and The Polybius Cabinet<div class="sub"><span class="group">Kick Butt Coffee</span> &middot; <span class="venue">Kick Butt Coffee</span> &middot; <span class="desc">A live experimental music performance at Kick Butt Coffee.</span></div></td><td class="src" style="color:#e74c3c">[DS]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Comedy" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Seared&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/austin-playhouse-presents-seared/&quot;, &quot;category&quot;: &quot;Comedy&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A comedy play about a brilliant chef whose restaurant&#x27;s sudden success brings chaos and tests loyalties.&quot;, &quot;time&quot;: &quot;7:30 PM&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T19:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/austin-playhouse-presents-seared.png?id=66847560&amp;width=1200&amp;height=600&amp;coordinates=0%2C19%2C0%2C19&quot;}'><td class="time">7:30 PM</td><td class="cat" style="color:#f1c40f">Comedy</td><td class="title">Seared<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">A comedy play about a brilliant chef whose restaurant&#x27;s sudden success brings chaos and tests loyalties.</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
@@ -244,13 +297,12 @@
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;Indoor Creature Dodo Dinner&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324446&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;13th Floor&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Dinner and live music event featuring Indoor Creature and Dodo. Open to food and music lovers.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Indoor Creature Dodo Dinner<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">13th Floor</span> &middot; <span class="desc">Dinner and live music event featuring Indoor Creature and Dodo. Open to food and music lovers.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;Elena Diaz Quartet&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324666&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Elephant Room&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Live music performance by Elena Diaz Quartet. Open to music fans.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Elena Diaz Quartet<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Elephant Room</span> &middot; <span class="desc">Live music performance by Elena Diaz Quartet. Open to music fans.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
 <tr class="ev" data-day="2026-06-25" data-cat="Concert" data-src="showlists" data-info='{&quot;title&quot;: &quot;FLAGS Glares Floating Cube&quot;, &quot;url&quot;: &quot;https://austin.showlists.net/#show-1324470&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;ShowLists&quot;, &quot;venue&quot;: &quot;Hole In The Wall&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Live music performance by FLAGS, Glares, and Floating Cube. Open to music fans.&quot;, &quot;time&quot;: &quot;&quot;, &quot;date&quot;: &quot;Thursday, June 25, 2026&quot;, &quot;start&quot;: &quot;2026-06-25T00:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;showlists&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time"></td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">FLAGS Glares Floating Cube<div class="sub"><span class="group">ShowLists</span> &middot; <span class="venue">Hole In The Wall</span> &middot; <span class="desc">Live music performance by FLAGS, Glares, and Floating Cube. Open to music fans.</span></div></td><td class="src" style="color:#A855F7">[SL]</td></tr>
-<tr class="date-row" data-day="2026-06-26"><td colspan="4"><span class="arrow">v</span> Friday, June 26 <span class="count">(18)</span></td></tr>
+<tr class="date-row" data-day="2026-06-26"><td colspan="4"><span class="arrow">v</span> Friday, June 26 <span class="count">(17)</span></td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Concert" data-src="instagram" data-info='{&quot;title&quot;: &quot;Antone&#x27;s 51st Anniversary Shows&quot;, &quot;url&quot;: &quot;https://www.instagram.com/antonesnightclub/p/DXwr0lJDXGz/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;@antonesnightclub&quot;, &quot;venue&quot;: &quot;Antone&#x27;s&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Antone&#x27;s hosts a month-long celebration featuring live music performances by artists including Fred Wesley &amp; His New JBs and Jimmie Vaughan.&quot;, &quot;time&quot;: &quot;10:00 AM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T10:00:00-06:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;instagram&quot;, &quot;image&quot;: &quot;https://instagram.faus1-1.fna.fbcdn.net/v/t51.82787-15/683612558_18584784547051852_7890734018325453073_n.jpg?stp=dst-jpg_e35_p640x640_sh2.08_tt6&amp;_nc_ht=instagram.faus1-1.fna.fbcdn.net&amp;_nc_cat=104&amp;_nc_oc=Q6cZ2gH3UmGsEEjD5OpcD25H9Gaztgend3qsxp5Fa9KvPdmKRZ9dfnflb4CK2HGTyYTjsBGTJonti_OOx-nxmC508phO&amp;_nc_ohc=HS17tq0Q6coQ7kNvwEGb9pT&amp;_nc_gid=UbW9kyEZ4oH84VbuPFsK6Q&amp;edm=AOQ1c0wBAAAA&amp;ccb=7-5&amp;oh=00_Af8OTsVmlmqlyYILbcHQCi11qEEgXNLGJIphZvsnLZ1K2Q&amp;oe=6A22F173&amp;_nc_sid=8b3546&quot;}'><td class="time">10:00 AM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Antone&#x27;s 51st Anniversary Shows<div class="sub"><span class="group">@antonesnightclub</span> &middot; <span class="venue">Antone&#x27;s</span> &middot; <span class="desc">Antone&#x27;s hosts a month-long celebration featuring live music performances by artists including Fred Wesley &amp; His New ...</span></div></td><td class="src" style="color:#E1306C">[IG]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Disco" data-src="19hz" data-info='{&quot;title&quot;: &quot;Flow State Social II&quot;, &quot;url&quot;: &quot;https://posh.vip/e/flow-state-social-ll&quot;, &quot;category&quot;: &quot;Disco&quot;, &quot;group&quot;: &quot;Sound Mind Society&quot;, &quot;venue&quot;: &quot;Zilker Metropolitan Park, Austin&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A dance music event featuring trance, house, and dubstep for attendees of Sound Mind Society.&quot;, &quot;time&quot;: &quot;5:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T17:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;19hz&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">5:00 PM</td><td class="cat" style="color:#9b59b6">Disco</td><td class="title">Flow State Social II<div class="sub"><span class="group">Sound Mind Society</span> &middot; <span class="venue">Zilker Metropolitan Park, Austin</span> &middot; <span class="desc">A dance music event featuring trance, house, and dubstep for attendees of Sound Mind Society.</span></div></td><td class="src" style="color:#f1c40f">[19hz]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Disco" data-src="19hz" data-info='{&quot;title&quot;: &quot;Jigitz&quot;, &quot;url&quot;: &quot;https://www.ticketmaster.com/event/3A0064299E957780&quot;, &quot;category&quot;: &quot;Disco&quot;, &quot;group&quot;: &quot;19hz.info&quot;, &quot;venue&quot;: &quot;Scoot Inn, Austin&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A UK garage and house music performance open to all ages.&quot;, &quot;time&quot;: &quot;6:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T18:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;19hz&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">6:00 PM</td><td class="cat" style="color:#9b59b6">Disco</td><td class="title">Jigitz<div class="sub"><span class="group">19hz.info</span> &middot; <span class="venue">Scoot Inn, Austin</span> &middot; <span class="desc">A UK garage and house music performance open to all ages.</span></div></td><td class="src" style="color:#f1c40f">[19hz]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Concert" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Sesame Street Live: Elmo&#x27;s Got the Moves&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/sesame-street-live-elmos-got-the-moves/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A musical performance for children and families featuring Elmo.&quot;, &quot;time&quot;: &quot;6:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T18:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/elmos-got-the-moves.jpg?id=62189959&amp;width=1200&amp;height=600&amp;coordinates=0%2C19%2C0%2C19&quot;}'><td class="time">6:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Sesame Street Live: Elmo&#x27;s Got the Moves<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">A musical performance for children and families featuring Elmo.</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Concert" data-src="darkside" data-info='{&quot;title&quot;: &quot;Saul Ravencraft&#x27;s Damned Show&quot;, &quot;url&quot;: &quot;https://www.thedarkersideofaustin.com/event/saul-ravencrafts-damned-show-2/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;Saul Ravencraft, Wizard&quot;, &quot;venue&quot;: &quot;Nature&amp;#8217;s Treasures Texas&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;An immersive theatrical performance at Nature&#x27;s Treasures Texas.&quot;, &quot;time&quot;: &quot;6:30 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T18:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;darkside&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">6:30 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Saul Ravencraft&#x27;s Damned Show<div class="sub"><span class="group">Saul Ravencraft, Wizard</span> &middot; <span class="venue">Nature&amp;#8217;s Treasures Texas</span> &middot; <span class="desc">An immersive theatrical performance at Nature&#x27;s Treasures Texas.</span></div></td><td class="src" style="color:#e74c3c">[DS]</td></tr>
-<tr class="ev" data-day="2026-06-26" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;US Air Guitar Qualifier&quot;, &quot;url&quot;: &quot;https://www.meetup.com/the-austin-scene/events/315270157/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;The Austin Scene&quot;, &quot;venue&quot;: &quot;The Jackalope - South Shore&quot;, &quot;address&quot;: &quot;1523 Tinnin Ford Rd, Austin, TX&quot;, &quot;desc&quot;: &quot;Competitive air guitar event with live music and audience participation. Open to participants 21 and older.&quot;, &quot;time&quot;: &quot;7:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T00:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-26T22:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/a/5/4/0/highres_534762304.jpeg&quot;}'><td class="time">7:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">US Air Guitar Qualifier<div class="sub"><span class="group">The Austin Scene</span> &middot; <span class="venue">The Jackalope - South Shore</span> &middot; <span class="desc">Competitive air guitar event with live music and audience participation. Open to participants 21 and older.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Market" data-src="19hz" data-info='{&quot;title&quot;: &quot;Dadageek Student Exhibition&quot;, &quot;url&quot;: &quot;https://events.humanitix.com/dadageek-student-exhibition-spring-2026&quot;, &quot;category&quot;: &quot;Market&quot;, &quot;group&quot;: &quot;19hz.info&quot;, &quot;venue&quot;: &quot;Dadalab, Austin&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;An art exhibition with a suggested donation open to all ages.&quot;, &quot;time&quot;: &quot;7:30 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T19:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;19hz&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">7:30 PM</td><td class="cat" style="color:#1abc9c">Market</td><td class="title">Dadageek Student Exhibition<div class="sub"><span class="group">19hz.info</span> &middot; <span class="venue">Dadalab, Austin</span> &middot; <span class="desc">An art exhibition with a suggested donation open to all ages.</span></div></td><td class="src" style="color:#f1c40f">[19hz]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Comedy" data-src="radio" data-info='{&quot;title&quot;: &quot;PowerPints&quot;, &quot;url&quot;: &quot;https://www.prekindle.com/promo/id/-2852527949137122429&quot;, &quot;category&quot;: &quot;Comedy&quot;, &quot;group&quot;: &quot;Radio Coffee &amp; Beer&quot;, &quot;venue&quot;: &quot;Radio/East&quot;, &quot;address&quot;: &quot;3504 Montopolis Dr., Austin, TX, 78744&quot;, &quot;desc&quot;: &quot;Comedy show featuring PowerPoint presentations.&quot;, &quot;time&quot;: &quot;8:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-26T20:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;radio&quot;, &quot;image&quot;: &quot;https://d1yf68t7nbxlyn.cloudfront.net/image/id/-2852527949137122117&quot;}'><td class="time">8:00 PM</td><td class="cat" style="color:#f1c40f">Comedy</td><td class="title">PowerPints<div class="sub"><span class="group">Radio Coffee &amp; Beer</span> &middot; <span class="venue">Radio/East</span> &middot; <span class="desc">Comedy show featuring PowerPoint presentations.</span></div></td><td class="src" style="color:#D4A017">[R]</td></tr>
 <tr class="ev" data-day="2026-06-26" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Primetime Backyard Movie Series: Hitchhiker&#x27;s Guide to the Galaxy&quot;, &quot;url&quot;: &quot;https://www.meetup.com/primetimeatx/events/314596639/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;PrimeTime ATX&quot;, &quot;venue&quot;: &quot;4429 Jinx Ave&quot;, &quot;address&quot;: &quot;4429 Jinx Ave, Austin, TX&quot;, &quot;desc&quot;: &quot;Outdoor screening of Hitchhiker&#x27;s Guide to the Galaxy. Attendees are invited to bring lawn chairs and beverages while free snacks are provided.&quot;, &quot;time&quot;: &quot;8:00 PM&quot;, &quot;date&quot;: &quot;Friday, June 26, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T01:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-26T23:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/3/4/c/f/highres_534013519.jpeg&quot;}'><td class="time">8:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Primetime Backyard Movie Series: Hitchhiker&#x27;s Guide to the Galaxy<div class="sub"><span class="group">PrimeTime ATX</span> &middot; <span class="venue">4429 Jinx Ave</span> &middot; <span class="desc">Outdoor screening of Hitchhiker&#x27;s Guide to the Galaxy. Attendees are invited to bring lawn chairs and beverages while...</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
@@ -273,7 +325,7 @@
 <tr class="ev" data-day="2026-06-27" data-cat="Sports" data-src="meetup" data-info='{&quot;title&quot;: &quot;Lower Bull Creek Hike&quot;, &quot;url&quot;: &quot;https://www.meetup.com/austin-bull-creek-hiking-meetup-group/events/314578921/&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;Austin Bull Creek Hiking Meetup&quot;, &quot;venue&quot;: &quot;Bull Creek District Park&quot;, &quot;address&quot;: &quot;6701 Lakewood Dr, Austin, TX&quot;, &quot;desc&quot;: &quot;4-mile loop hike along Lower Bull Creek with creek crossings. Dogs allowed on leashes. Bring water and durable shoes.&quot;, &quot;time&quot;: &quot;9:30 AM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T14:30:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-27T11:30:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/8/1/e/f/highres_510513263.jpeg&quot;}'><td class="time">9:30 AM</td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">Lower Bull Creek Hike<div class="sub"><span class="group">Austin Bull Creek Hiking Meetup</span> &middot; <span class="venue">Bull Creek District Park</span> &middot; <span class="desc">4-mile loop hike along Lower Bull Creek with creek crossings. Dogs allowed on leashes. Bring water and durable shoes.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-27" data-cat="Sports" data-src="meetup" data-info='{&quot;title&quot;: &quot;Sol Sweat&quot;, &quot;url&quot;: &quot;https://www.meetup.com/austin-free-fitness-collective/events/315338537/&quot;, &quot;category&quot;: &quot;Sports&quot;, &quot;group&quot;: &quot;Austin Free Fitness Collective&quot;, &quot;venue&quot;: &quot;The Lawn&quot;, &quot;address&quot;: &quot;2118 S Congress Ave, Austin, TX&quot;, &quot;desc&quot;: &quot;Morning group workout with live DJ and wellness activities at The Lawn. Includes juice samples and social time.&quot;, &quot;time&quot;: &quot;9:45 AM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T14:45:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-27T11:45:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/a/c/a/d/highres_534824205.jpeg&quot;}'><td class="time">9:45 AM</td><td class="cat" style="color:#2ecc71">Sports</td><td class="title">Sol Sweat<div class="sub"><span class="group">Austin Free Fitness Collective</span> &middot; <span class="venue">The Lawn</span> &middot; <span class="desc">Morning group workout with live DJ and wellness activities at The Lawn. Includes juice samples and social time.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-27" data-cat="Market" data-src="darkside" data-info='{&quot;title&quot;: &quot;Austin Oddities and Curiosities Expo 2026&quot;, &quot;url&quot;: &quot;https://www.thedarkersideofaustin.com/event/austin-oddities-curiosities-expo-2026/&quot;, &quot;category&quot;: &quot;Market&quot;, &quot;group&quot;: &quot;Oddities &amp;amp; Curiosities Expo&quot;, &quot;venue&quot;: &quot;Palmer Events Center&quot;, &quot;address&quot;: &quot;900 Barton Springs Road, Austin, TX, 78704&quot;, &quot;desc&quot;: &quot;A vendor expo for odd and unusual items at Palmer Events Center.&quot;, &quot;time&quot;: &quot;10:00 AM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T10:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;darkside&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">10:00 AM</td><td class="cat" style="color:#1abc9c">Market</td><td class="title">Austin Oddities and Curiosities Expo 2026<div class="sub"><span class="group">Oddities &amp;amp; Curiosities Expo</span> &middot; <span class="venue">Palmer Events Center</span> &middot; <span class="desc">A vendor expo for odd and unusual items at Palmer Events Center.</span></div></td><td class="src" style="color:#e74c3c">[DS]</td></tr>
-<tr class="ev" data-day="2026-06-27" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Cosmic Coworking Saturday \ud83d\ude80&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/315080494/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;&quot;, &quot;time&quot;: &quot;12:00 PM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T17:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">12:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Cosmic Coworking Saturday 🚀<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
+<tr class="ev" data-day="2026-06-27" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Event&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/315080494/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;No details available for this event.&quot;, &quot;time&quot;: &quot;12:00 PM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T17:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">12:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Event<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span> &middot; <span class="desc">No details available for this event.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-27" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Saturday Meetup&quot;, &quot;url&quot;: &quot;https://www.meetup.com/finding-bffs-social-events-gatherings/events/315282578/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;ATX finding bffs - Social Events (20s, 30s, &amp; 40s)&quot;, &quot;venue&quot;: &quot;Cosmic Saltillo&quot;, &quot;address&quot;: &quot;1300 E 4th St, Austin, TX&quot;, &quot;desc&quot;: &quot;A casual gathering for people to connect over coffee, drinks, or food in a relaxed setting. Dog-friendly venue with outdoor seating.&quot;, &quot;time&quot;: &quot;3:00 PM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T20:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-27T17:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/9/2/3/8/highres_528817432.jpeg&quot;}'><td class="time">3:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Saturday Meetup<div class="sub"><span class="group">ATX finding bffs - Social Events (20s, 30s, &amp; 40s)</span> &middot; <span class="venue">Cosmic Saltillo</span> &middot; <span class="desc">A casual gathering for people to connect over coffee, drinks, or food in a relaxed setting. Dog-friendly venue with o...</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-27" data-cat="Social" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Blue Immersion opening reception&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/verdant-gallery-presents-blue-immersion-opening-reception/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Opening reception for an exhibition featuring two artists exploring themes of water, landscapes, and memory through painting. Open to art lovers.&quot;, &quot;time&quot;: &quot;4:00 PM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T16:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/exhibition-opening-reception-blue-immersion.jpg?id=66879131&amp;width=1200&amp;height=600&amp;coordinates=0%2C19%2C0%2C19&quot;}'><td class="time">4:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Blue Immersion opening reception<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">Opening reception for an exhibition featuring two artists exploring themes of water, landscapes, and memory through p...</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
 <tr class="ev" data-day="2026-06-27" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;SPQR: A History of Ancient Rome Book Club&quot;, &quot;url&quot;: &quot;https://www.meetup.com/history-matters/events/314431712/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;History Matters Book Club With Beer&quot;, &quot;venue&quot;: &quot;Draught House Pub &amp; Brewery&quot;, &quot;address&quot;: &quot;4112 Medical Pkwy, Austin, TX&quot;, &quot;desc&quot;: &quot;A discussion group for the book SPQR: A History of Ancient Rome by Mary Beard, including author lectures and debate.&quot;, &quot;time&quot;: &quot;5:00 PM&quot;, &quot;date&quot;: &quot;Saturday, June 27, 2026&quot;, &quot;start&quot;: &quot;2026-06-27T22:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-27T20:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/9/2/6/0/highres_533857472.jpeg&quot;}'><td class="time">5:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">SPQR: A History of Ancient Rome Book Club<div class="sub"><span class="group">History Matters Book Club With Beer</span> &middot; <span class="venue">Draught House Pub &amp; Brewery</span> &middot; <span class="desc">A discussion group for the book SPQR: A History of Ancient Rome by Mary Beard, including author lectures and debate.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
@@ -307,7 +359,7 @@
 <tr class="ev" data-day="2026-06-28" data-cat="Concert" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Zlatomir Fung &amp; Friends concert&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/austin-chamber-music-festival-zlatomir-fung-friends/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Celebration of the cello featuring Zlatomir Fung and friends. Open to classical music fans.&quot;, &quot;time&quot;: &quot;3:00 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T15:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/zlatomir-fung.jpg?id=66844395&amp;width=1200&amp;height=600&amp;coordinates=0%2C19%2C0%2C19&quot;}'><td class="time">3:00 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Zlatomir Fung &amp; Friends concert<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">Celebration of the cello featuring Zlatomir Fung and friends. Open to classical music fans.</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
 <tr class="ev" data-day="2026-06-28" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Show and Tell for Grown Ups&quot;, &quot;url&quot;: &quot;https://www.meetup.com/austin-show-and-tell/events/315148957/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Austin Show and Tell&quot;, &quot;venue&quot;: &quot;Central Market Cafe&quot;, &quot;address&quot;: &quot;4001 N Lamar Blvd, Austin, TX&quot;, &quot;desc&quot;: &quot;Informal presentation event where participants share projects, hobbies, or interests with the group.&quot;, &quot;time&quot;: &quot;4:00 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T21:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-28T18:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/e/7/0/2/highres_507359138.jpeg&quot;}'><td class="time">4:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Show and Tell for Grown Ups<div class="sub"><span class="group">Austin Show and Tell</span> &middot; <span class="venue">Central Market Cafe</span> &middot; <span class="desc">Informal presentation event where participants share projects, hobbies, or interests with the group.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-28" data-cat="Disco" data-src="19hz" data-info='{&quot;title&quot;: &quot;Sunset Sessions&quot;, &quot;url&quot;: &quot;https://posh.vip/e/sunset-sessions-628&quot;, &quot;category&quot;: &quot;Disco&quot;, &quot;group&quot;: &quot;19hz.info&quot;, &quot;venue&quot;: &quot;Twins Nightclub, Austin&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;A house music event with free entry upon RSVP. Open to all attendees.&quot;, &quot;time&quot;: &quot;4:00 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T16:00:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;19hz&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">4:00 PM</td><td class="cat" style="color:#9b59b6">Disco</td><td class="title">Sunset Sessions<div class="sub"><span class="group">19hz.info</span> &middot; <span class="venue">Twins Nightclub, Austin</span> &middot; <span class="desc">A house music event with free entry upon RSVP. Open to all attendees.</span></div></td><td class="src" style="color:#f1c40f">[19hz]</td></tr>
-<tr class="ev" data-day="2026-06-28" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Bring your own Book: A  Social and Read Hangout&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/315086746/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;&quot;, &quot;time&quot;: &quot;4:30 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T21:30:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">4:30 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Bring your own Book: A  Social and Read Hangout<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
+<tr class="ev" data-day="2026-06-28" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Event&quot;, &quot;url&quot;: &quot;https://www.meetup.com/i-love-austin-but-i-need-some-f-g-friends/events/315086746/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;I Love Austin But I Need Some F G Friends&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;No details available for this event.&quot;, &quot;time&quot;: &quot;4:30 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T21:30:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;&quot;}'><td class="time">4:30 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Event<div class="sub"><span class="group">I Love Austin But I Need Some F G Friends</span> &middot; <span class="desc">No details available for this event.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-28" data-cat="Comedy" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Tommy Davidson Comedy Show&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/cap-city-comedy-club-presents-tommy-davidson/&quot;, &quot;category&quot;: &quot;Comedy&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Tommy Davidson performs stand-up comedy. Open to comedy fans.&quot;, &quot;time&quot;: &quot;4:30 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T16:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/tommy-davidson.jpg?id=50564714&amp;width=1200&amp;height=600&amp;coordinates=0%2C15%2C0%2C23&quot;}'><td class="time">4:30 PM</td><td class="cat" style="color:#f1c40f">Comedy</td><td class="title">Tommy Davidson Comedy Show<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">Tommy Davidson performs stand-up comedy. Open to comedy fans.</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
 <tr class="ev" data-day="2026-06-28" data-cat="Social" data-src="meetup" data-info='{&quot;title&quot;: &quot;Austin Singles Speed Dating&quot;, &quot;url&quot;: &quot;https://www.meetup.com/austin-singles/events/315006340/&quot;, &quot;category&quot;: &quot;Social&quot;, &quot;group&quot;: &quot;Austin Singles 30s to 40s&quot;, &quot;venue&quot;: &quot;The Pub&quot;, &quot;address&quot;: &quot;815 W 47th St STE 103, Austin, TX&quot;, &quot;desc&quot;: &quot;A structured speed dating event for singles in their 30s to 40s to meet new people.&quot;, &quot;time&quot;: &quot;5:00 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T22:00:00-05:00[US/Central]&quot;, &quot;end&quot;: &quot;2026-06-28T20:00:00-05:00&quot;, &quot;source&quot;: &quot;meetup&quot;, &quot;image&quot;: &quot;https://secure.meetupstatic.com/photos/event/3/7/1/f/highres_532634111.jpeg&quot;}'><td class="time">5:00 PM</td><td class="cat" style="color:#3498db">Social</td><td class="title">Austin Singles Speed Dating<div class="sub"><span class="group">Austin Singles 30s to 40s</span> &middot; <span class="venue">The Pub</span> &middot; <span class="desc">A structured speed dating event for singles in their 30s to 40s to meet new people.</span></div></td><td class="src" style="color:#2ecc71">[M]</td></tr>
 <tr class="ev" data-day="2026-06-28" data-cat="Concert" data-src="culturemap" data-info='{&quot;title&quot;: &quot;Hilary Duff Concert&quot;, &quot;url&quot;: &quot;https://austin.culturemap.com/eventdetail/hilary-duff-in-concert/&quot;, &quot;category&quot;: &quot;Concert&quot;, &quot;group&quot;: &quot;CultureMap&quot;, &quot;venue&quot;: &quot;&quot;, &quot;address&quot;: &quot;&quot;, &quot;desc&quot;: &quot;Hilary Duff performs songs from her new album. Suitable for music fans.&quot;, &quot;time&quot;: &quot;6:30 PM&quot;, &quot;date&quot;: &quot;Sunday, June 28, 2026&quot;, &quot;start&quot;: &quot;2026-06-28T18:30:00-05:00&quot;, &quot;end&quot;: &quot;&quot;, &quot;source&quot;: &quot;culturemap&quot;, &quot;image&quot;: &quot;https://austin.culturemap.com/media-library/hillary-duff.jpg?id=66988283&amp;width=1200&amp;height=600&amp;coordinates=0%2C19%2C0%2C19&quot;}'><td class="time">6:30 PM</td><td class="cat" style="color:#e74c3c">Concert</td><td class="title">Hilary Duff Concert<div class="sub"><span class="group">CultureMap</span> &middot; <span class="desc">Hilary Duff performs songs from her new album. Suitable for music fans.</span></div></td><td class="src" style="color:#FF6B35">[CM]</td></tr>
@@ -621,7 +673,22 @@
 
 <script>
 (function() {
+  var CATEGORY_COLORS = {"Concert": "#e74c3c", "Disco": "#9b59b6", "Social": "#3498db", "Comedy": "#f1c40f", "Sports": "#2ecc71", "Workshop": "#e67e22", "Market": "#1abc9c"};
   var modal = document.getElementById('modal-bg');
+
+  // --- Theme toggle ---
+  var themeBtn = document.getElementById('theme-toggle');
+  if (localStorage.getItem('theme') === 'light') {
+    document.documentElement.classList.add('light');
+    if (themeBtn) themeBtn.textContent = '☀';
+  }
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function() {
+      var isLight = document.documentElement.classList.toggle('light');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      themeBtn.textContent = isLight ? '☀' : '☾';
+    });
+  }
   var SRC_NAMES = {radio:'Radio Coffee & Beer',meetup:'Meetup',litebrite:'Lite & Brite',
     '19hz':'19hz',do512:'Do512',darkside:'Darker Side',instagram:'Instagram',
     whatsgoodatx:"What's Good ATX",songkick:'Songkick',culturemap:'CultureMap',
@@ -636,7 +703,7 @@
     else { timeRow.style.display = 'none'; }
     var catEl = document.getElementById('m-cat');
     catEl.textContent = info.category;
-    catEl.style.color = {"Concert": "#e74c3c", "Disco": "#9b59b6", "Social": "#3498db", "Comedy": "#f1c40f", "Sports": "#2ecc71", "Workshop": "#e67e22", "Market": "#1abc9c"}[info.category] || '#8b949e';
+    catEl.style.color = CATEGORY_COLORS[info.category] || '#8b949e';
     document.getElementById('m-group').textContent = info.group;
     document.getElementById('m-venue').textContent = info.venue;
     var addrRow = document.getElementById('m-addr-row');
@@ -670,7 +737,7 @@
     modal.classList.add('open');
   }
 
-  // Generate .ics file and trigger download (opens native calendar app)
+  // Generate .ics file and trigger download
   document.getElementById('m-cal').addEventListener('click', function(e) {
     e.preventDefault();
     var info = this._info;
@@ -738,6 +805,16 @@
     });
   });
 
+  // --- Search ---
+  var searchBox = document.getElementById('search-box');
+  var searchQuery = '';
+  if (searchBox) {
+    searchBox.addEventListener('input', function() {
+      searchQuery = this.value.toLowerCase();
+      applyVisibility();
+    });
+  }
+
   // --- Category: select-one ---
   var selectedCat = 'all';
   var catBtns = document.querySelectorAll('.tog[data-filter="cat"]');
@@ -770,9 +847,10 @@
       var src = row.dataset.src;
       var catOk = selectedCat === 'all' || cat === selectedCat;
       var srcOk = activeSrcs.has(src);
-      var show = catOk && srcOk && !collapsed[day];
+      var searchOk = !searchQuery || row.dataset.info.toLowerCase().indexOf(searchQuery) >= 0;
+      var show = catOk && srcOk && searchOk && !collapsed[day];
       row.classList.toggle('hidden', !show);
-      if (catOk && srcOk) dayCounts[day] = (dayCounts[day] || 0) + 1;
+      if (catOk && srcOk && searchOk) dayCounts[day] = (dayCounts[day] || 0) + 1;
     });
     document.querySelectorAll('.date-row').forEach(function(row) {
       var day = row.dataset.day;
@@ -781,7 +859,57 @@
       row.classList.toggle('hidden', n === 0);
     });
   }
+
+  // --- Bulk calendar export ---
+  var exportBtn = document.getElementById('export-cal');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      function fmt(d) {
+        return d.toISOString().replace(/[-:.]/g,'').replace(/\d{3}Z/, 'Z');
+      }
+      function esc(t) {
+        return (t||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+      }
+      var vevents = [];
+      document.querySelectorAll('tr.ev:not(.hidden)').forEach(function(row) {
+        var info = JSON.parse(row.dataset.info);
+        if (!info.start) return;
+        var s = info.start.replace(/\[.*\]$/, '');
+        var startDt = new Date(s);
+        if (isNaN(startDt)) return;
+        var endDt;
+        if (info.end) {
+          endDt = new Date(info.end.replace(/\[.*\]$/, ''));
+          if (isNaN(endDt)) endDt = new Date(startDt.getTime() + 7200000);
+        } else {
+          endDt = new Date(startDt.getTime() + 7200000);
+        }
+        var loc = [info.venue, info.address].filter(Boolean).join(', ');
+        vevents.push([
+          'BEGIN:VEVENT',
+          'DTSTART:' + fmt(startDt),
+          'DTEND:' + fmt(endDt),
+          'SUMMARY:' + esc(info.title),
+          loc ? 'LOCATION:' + esc(loc) : '',
+          info.url ? 'URL:' + info.url : '',
+          'END:VEVENT'
+        ].filter(Boolean).join('\r\n'));
+      });
+      if (!vevents.length) return;
+      var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//AustinEvents//EN\r\n'
+        + vevents.join('\r\n') + '\r\nEND:VCALENDAR';
+      var blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = 'austin-events.ics';
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
 })();
+
 </script>
 </body>
 </html>
