@@ -176,7 +176,7 @@ tr.hidden { display: none; }
 <h1>Austin Events</h1>
 <button id="theme-toggle" title="Toggle theme">&#9790;</button>
 </div>
-<div class="meta">Generated June 23, 2026 at 02:51 AM &middot; 377 events</div>
+<div class="meta">Generated June 23, 2026 at 02:58 AM &middot; 377 events</div>
 <div style="display:flex;gap:8px;margin-bottom:6px">
 <input type="text" id="search-box" placeholder="Search events..." style="flex:1">
 <a href="#" id="export-cal" class="export-btn" title="Download all visible events as .ics">Export .ics</a>
@@ -815,14 +815,42 @@ tr.hidden { display: none; }
     });
   }
 
-  // --- Category: select-one ---
-  var selectedCat = 'all';
+  // --- Category: multi-select toggle ---
+  var HIDDEN_CATS = new Set(['Sports', 'Comedy']);
+  var activeCats = new Set();
   var catBtns = document.querySelectorAll('.tog[data-filter="cat"]');
+  catBtns.forEach(function(btn) {
+    var val = btn.dataset.val;
+    if (val === 'all' || !HIDDEN_CATS.has(val)) {
+      activeCats.add(val);
+    } else {
+      btn.classList.remove('on');
+    }
+  });
+  var allBtn = document.querySelector('.tog[data-filter="cat"][data-val="all"]');
+  function updateAllBtn() {
+    var nonAll = document.querySelectorAll('.tog[data-filter="cat"]:not([data-val="all"])');
+    var allOn = true;
+    nonAll.forEach(function(b) { if (!activeCats.has(b.dataset.val)) allOn = false; });
+    if (allBtn) allBtn.classList.toggle('on', allOn);
+  }
+  updateAllBtn();
   catBtns.forEach(function(btn) {
     btn.addEventListener('click', function() {
       var val = btn.dataset.val;
-      selectedCat = (val === selectedCat) ? 'all' : val;
-      catBtns.forEach(function(b) { b.classList.toggle('on', b.dataset.val === selectedCat); });
+      if (val === 'all') {
+        var nonAll = document.querySelectorAll('.tog[data-filter="cat"]:not([data-val="all"])');
+        var allOn = true;
+        nonAll.forEach(function(b) { if (!activeCats.has(b.dataset.val)) allOn = false; });
+        nonAll.forEach(function(b) {
+          if (allOn) { activeCats.delete(b.dataset.val); b.classList.remove('on'); }
+          else { activeCats.add(b.dataset.val); b.classList.add('on'); }
+        });
+      } else {
+        if (activeCats.has(val)) { activeCats.delete(val); btn.classList.remove('on'); }
+        else { activeCats.add(val); btn.classList.add('on'); }
+      }
+      updateAllBtn();
       applyVisibility();
     });
   });
@@ -845,7 +873,7 @@ tr.hidden { display: none; }
       var day = row.dataset.day;
       var cat = row.dataset.cat;
       var src = row.dataset.src;
-      var catOk = selectedCat === 'all' || cat === selectedCat;
+      var catOk = activeCats.has(cat);
       var srcOk = activeSrcs.has(src);
       var searchOk = !searchQuery || row.dataset.info.toLowerCase().indexOf(searchQuery) >= 0;
       var show = catOk && srcOk && searchOk && !collapsed[day];
